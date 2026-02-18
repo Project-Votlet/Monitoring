@@ -32,28 +32,51 @@ scrape_configs:
       # Compose service label
       - source_labels: ['__meta_docker_container_label_com_docker_compose_service']
         target_label: compose_service
+
     pipeline_stages:
-      # Try to parse as JSON (Laravel structured logs)
-      - json:
-          expressions:
-            level: level
-            log_channel: channel
-            log_message: message
-            context: context
-            timestamp: datetime
-      # Fall back — if not JSON, just grab the raw line
-      - output:
-          source: log_message
-      # Extract log level as a label for easy filtering
-      - labels:
-          level:
-          log_channel:
-      # Drop health check noise
+      # ─────────────────────────────────────────────
+      # Laravel JSON logs (Monolog JsonFormatter)
+      # Format: {"message":"...","context":{},"level":200,"level_name":"INFO","channel":"production","datetime":"...","extra":{}}
+      # ─────────────────────────────────────────────
+      - match:
+          selector: '{service=~"auth|profile|social|message|notification|space|webhook|bot|admin|media|reverb"}'
+          stages:
+            - json:
+                expressions:
+                  log_message: message
+                  level: level_name
+                  channel: channel
+                  context: context
+                  datetime: datetime
+            # Use parsed level as a label for filtering
+            - labels:
+                level:
+                channel:
+            # Use the log message as the displayed line (not raw JSON)
+            - output:
+                source: log_message
+            # Use Laravel's timestamp
+            - timestamp:
+                source: datetime
+                format: "2006-01-02T15:04:05.000000Z"
+                fallback_formats:
+                  - "2006-01-02T15:04:05.999999999Z07:00"
+                  - "2006-01-02 15:04:05"
+
+      # ─────────────────────────────────────────────
+      # artisan serve access logs (plain text)
+      # Format: "GET /api/users 200" — keep as-is
+      # ─────────────────────────────────────────────
+
+      # ─────────────────────────────────────────────
+      # Drop health check noise from all services
+      # ─────────────────────────────────────────────
       - match:
           selector: '{service=~".+"}'
           stages:
-            - regex:
-                expression: 'GET /up HTTP'
             - drop:
-                expression: 'GET /up HTTP'
+                expression: '(GET|HEAD) /up'
                 drop_counter_reason: health_check
+            - drop:
+                expression: 'GET /metrics'
+                drop_counter_reason: metrics_scrape

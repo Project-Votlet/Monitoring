@@ -65,8 +65,12 @@ services:
   cadvisor:
     image: gcr.io/cadvisor/cadvisor:v0.51.0
     container_name: violet-cadvisor
+    command:
+      - --docker_only=true
+      - --disable_metrics=disk,udp,percpu,sched,process,hugetlb,referenced_memory
+      - --housekeeping_interval=30s
+    privileged: true
     volumes:
-      - /:/rootfs:ro
       - /var/run:/var/run:ro
       - /sys:/sys:ro
       - /var/lib/docker/:/var/lib/docker:ro

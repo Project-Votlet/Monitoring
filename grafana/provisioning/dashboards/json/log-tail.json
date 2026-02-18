@@ -4,7 +4,7 @@
   "links": [],
   "panels": [
     {
-      "title": "Live Logs — $service",
+      "title": "",
       "type": "logs",
       "datasource": { "type": "loki", "uid": "loki" },
       "gridPos": { "h": 28, "w": 24, "x": 0, "y": 0 },
@@ -20,7 +20,7 @@
       },
       "targets": [
         {
-          "expr": "{compose_service=~\"$service\"}",
+          "expr": "{service=~\"$service\"} $filter",
           "maxLines": 500
         }
       ]
@@ -33,26 +33,41 @@
     "list": [
       {
         "name": "service",
+        "label": "Service",
         "type": "custom",
-        "current": { "text": "All", "value": ".+" },
+        "current": { "text": "All Services", "value": "auth|profile|social|message|notification|space|voice|webhook|bot|admin|media|reverb" },
         "options": [
-          { "text": "All",          "value": ".+",                  "selected": true },
-          { "text": "Auth",         "value": "auth-service",        "selected": false },
-          { "text": "Profile",      "value": "profile-service",     "selected": false },
-          { "text": "Social",       "value": "social-service",      "selected": false },
-          { "text": "Message",      "value": "message-service",     "selected": false },
-          { "text": "Notification", "value": "notification-service","selected": false },
-          { "text": "Space",        "value": "space-service",       "selected": false },
-          { "text": "Voice",        "value": "voice-service",       "selected": false },
-          { "text": "Webhook",      "value": "webhook-service",     "selected": false },
-          { "text": "Bot",          "value": "bot-service",         "selected": false },
-          { "text": "Admin",        "value": "admin-service",       "selected": false },
-          { "text": "Media",        "value": "media-service",       "selected": false },
-          { "text": "Reverb",       "value": "reverb",              "selected": false },
-          { "text": "Nginx",        "value": "nginx",               "selected": false },
-          { "text": "Postgres",     "value": "postgres",            "selected": false },
-          { "text": "Redis",        "value": "redis",               "selected": false },
-          { "text": "NATS",         "value": "nats",                "selected": false }
+          { "text": "All Services",  "value": "auth|profile|social|message|notification|space|voice|webhook|bot|admin|media|reverb", "selected": true },
+          { "text": "Auth",          "value": "auth",         "selected": false },
+          { "text": "Profile",       "value": "profile",      "selected": false },
+          { "text": "Social",        "value": "social",        "selected": false },
+          { "text": "Message",       "value": "message",      "selected": false },
+          { "text": "Notification",  "value": "notification", "selected": false },
+          { "text": "Space",         "value": "space",         "selected": false },
+          { "text": "Voice",         "value": "voice",         "selected": false },
+          { "text": "Webhook",       "value": "webhook",      "selected": false },
+          { "text": "Bot",           "value": "bot",           "selected": false },
+          { "text": "Admin",         "value": "admin",         "selected": false },
+          { "text": "Media",         "value": "media",         "selected": false },
+          { "text": "Reverb",        "value": "reverb",        "selected": false },
+          { "text": "--- Infra ---", "value": "---",           "selected": false },
+          { "text": "Nginx",         "value": "nginx",         "selected": false },
+          { "text": "Postgres",      "value": "postgres",      "selected": false },
+          { "text": "Redis",         "value": "redis",         "selected": false },
+          { "text": "NATS",          "value": "nats",          "selected": false }
+        ],
+        "includeAll": false,
+        "multi": false
+      },
+      {
+        "name": "filter",
+        "label": "Filter",
+        "type": "custom",
+        "current": { "text": "All Levels", "value": "", "selected": true },
+        "options": [
+          { "text": "All Levels",  "value": "",                    "selected": true },
+          { "text": "Errors Only", "value": "| json | level=~\"ERROR|CRITICAL|EMERGENCY\"", "selected": false },
+          { "text": "Warnings+",   "value": "| json | level=~\"WARNING|ERROR|CRITICAL|EMERGENCY\"", "selected": false }
         ],
         "includeAll": false,
         "multi": false
