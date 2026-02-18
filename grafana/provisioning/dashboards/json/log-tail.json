@@ -1,0 +1,67 @@
+{
+  "editable": true,
+  "graphTooltip": 0,
+  "links": [],
+  "panels": [
+    {
+      "title": "Live Logs — $service",
+      "type": "logs",
+      "datasource": { "type": "loki", "uid": "loki" },
+      "gridPos": { "h": 28, "w": 24, "x": 0, "y": 0 },
+      "options": {
+        "showTime": true,
+        "showLabels": true,
+        "showCommonLabels": false,
+        "wrapLogMessage": true,
+        "prettifyLogMessage": true,
+        "enableLogDetails": true,
+        "sortOrder": "Descending",
+        "dedupStrategy": "none"
+      },
+      "targets": [
+        {
+          "expr": "{compose_service=~\"$service\"}",
+          "maxLines": 500
+        }
+      ]
+    }
+  ],
+  "refresh": "5s",
+  "schemaVersion": 39,
+  "tags": ["violet", "logs"],
+  "templating": {
+    "list": [
+      {
+        "name": "service",
+        "type": "custom",
+        "current": { "text": "All", "value": ".+" },
+        "options": [
+          { "text": "All",          "value": ".+",                  "selected": true },
+          { "text": "Auth",         "value": "auth-service",        "selected": false },
+          { "text": "Profile",      "value": "profile-service",     "selected": false },
+          { "text": "Social",       "value": "social-service",      "selected": false },
+          { "text": "Message",      "value": "message-service",     "selected": false },
+          { "text": "Notification", "value": "notification-service","selected": false },
+          { "text": "Space",        "value": "space-service",       "selected": false },
+          { "text": "Voice",        "value": "voice-service",       "selected": false },
+          { "text": "Webhook",      "value": "webhook-service",     "selected": false },
+          { "text": "Bot",          "value": "bot-service",         "selected": false },
+          { "text": "Admin",        "value": "admin-service",       "selected": false },
+          { "text": "Media",        "value": "media-service",       "selected": false },
+          { "text": "Reverb",       "value": "reverb",              "selected": false },
+          { "text": "Nginx",        "value": "nginx",               "selected": false },
+          { "text": "Postgres",     "value": "postgres",            "selected": false },
+          { "text": "Redis",        "value": "redis",               "selected": false },
+          { "text": "NATS",         "value": "nats",                "selected": false }
+        ],
+        "includeAll": false,
+        "multi": false
+      }
+    ]
+  },
+  "time": { "from": "now-15m", "to": "now" },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Log Tail",
+  "uid": "violet-log-tail"
+}

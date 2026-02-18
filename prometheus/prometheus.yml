@@ -8,16 +8,16 @@ scrape_configs:
     static_configs:
       - targets: ["localhost:9090"]
 
-  # Per-container metrics (CPU, memory, network, disk I/O)
+  # Per-container resource metrics (CPU, memory, network, disk I/O)
   - job_name: cadvisor
     static_configs:
       - targets: ["cadvisor:8080"]
     metric_relabel_configs:
-      # Only keep violet containers (drop system/monitoring containers noise)
-      - source_labels: [container_label_com_docker_compose_project]
-        regex: ".+"
+      # Only keep violet containers
+      - source_labels: [name]
+        regex: "violet-.*"
         action: keep
-      # Add a clean "service" label from container name
+      # Add clean "service" label
       - source_labels: [name]
         regex: "violet-(.*)"
         target_label: service
@@ -27,3 +27,39 @@ scrape_configs:
   - job_name: node-exporter
     static_configs:
       - targets: ["node-exporter:9100"]
+
+  # Application-level metrics from each Laravel service
+  - job_name: violet-services
+    scrape_interval: 10s
+    static_configs:
+      - targets: ["auth-service:3000"]
+        labels:
+          service: auth
+      - targets: ["profile-service:3001"]
+        labels:
+          service: profile
+      - targets: ["social-service:3002"]
+        labels:
+          service: social
+      - targets: ["message-service:3003"]
+        labels:
+          service: message
+      - targets: ["notification-service:3004"]
+        labels:
+          service: notification
+      - targets: ["space-service:3005"]
+        labels:
+          service: space
+      - targets: ["webhook-service:3007"]
+        labels:
+          service: webhook
+      - targets: ["bot-service:3008"]
+        labels:
+          service: bot
+      - targets: ["admin-service:3009"]
+        labels:
+          service: admin
+      - targets: ["media-service:3010"]
+        labels:
+          service: media
+    metrics_path: /metrics
