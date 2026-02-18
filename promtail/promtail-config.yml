@@ -1,0 +1,59 @@
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+
+positions:
+  filename: /tmp/positions.yaml
+
+clients:
+  - url: http://loki:3100/loki/api/v1/push
+
+scrape_configs:
+  # Scrape all Docker container logs automatically
+  - job_name: docker
+    docker_sd_configs:
+      - host: unix:///var/run/docker.sock
+        refresh_interval: 5s
+        filters:
+          - name: network
+            values: ["violet-network"]
+    relabel_configs:
+      # Use container name as primary label
+      - source_labels: ['__meta_docker_container_name']
+        regex: '/(.*)'
+        target_label: container
+      # Extract service name from container name (violet-auth → auth)
+      - source_labels: ['__meta_docker_container_name']
+        regex: '/violet-(.*)'
+        target_label: service
+      # Compose project label
+      - source_labels: ['__meta_docker_container_label_com_docker_compose_project']
+        target_label: project
+      # Compose service label
+      - source_labels: ['__meta_docker_container_label_com_docker_compose_service']
+        target_label: compose_service
+    pipeline_stages:
+      # Try to parse as JSON (Laravel structured logs)
+      - json:
+          expressions:
+            level: level
+            log_channel: channel
+            log_message: message
+            context: context
+            timestamp: datetime
+      # Fall back — if not JSON, just grab the raw line
+      - output:
+          source: log_message
+      # Extract log level as a label for easy filtering
+      - labels:
+          level:
+          log_channel:
+      # Drop health check noise
+      - match:
+          selector: '{service=~".+"}'
+          stages:
+            - regex:
+                expression: 'GET /up HTTP'
+            - drop:
+                expression: 'GET /up HTTP'
+                drop_counter_reason: health_check

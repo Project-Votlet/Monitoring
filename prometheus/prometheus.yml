@@ -1,0 +1,29 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  # Prometheus self-monitoring
+  - job_name: prometheus
+    static_configs:
+      - targets: ["localhost:9090"]
+
+  # Per-container metrics (CPU, memory, network, disk I/O)
+  - job_name: cadvisor
+    static_configs:
+      - targets: ["cadvisor:8080"]
+    metric_relabel_configs:
+      # Only keep violet containers (drop system/monitoring containers noise)
+      - source_labels: [container_label_com_docker_compose_project]
+        regex: ".+"
+        action: keep
+      # Add a clean "service" label from container name
+      - source_labels: [name]
+        regex: "violet-(.*)"
+        target_label: service
+        replacement: "$1"
+
+  # Host-level metrics (total CPU, RAM, disk space)
+  - job_name: node-exporter
+    static_configs:
+      - targets: ["node-exporter:9100"]
